@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Queen : ChessPiece
 {
-    public override List<Vector2> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public override List<Vector2Int> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2> possibleMoves = new List<Vector2>();
+        List<Vector2Int> possibleMoves = new List<Vector2Int>();
 
         //move diagonal up-right
         int i = 0;
@@ -14,7 +14,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX + 1 + i, currentY + 1 + i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY + 1 + i));
             }
             else
             {
@@ -22,7 +22,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY + 1 + i));
                 break;
             }
             i++;
@@ -35,7 +35,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX - 1 - i, currentY + 1 + i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY + 1 + i));
             }
             else
             {
@@ -43,7 +43,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY + 1 + i));
                 break;
             }
             i++;
@@ -56,7 +56,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX + 1 + i, currentY - 1 - i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY - 1 - i));
             }
             else
             {
@@ -64,7 +64,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY - 1 - i));
                 break;
             }
             i++;
@@ -77,7 +77,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX - 1 - i, currentY - 1 - i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY - 1 - i));
             }
             else
             {
@@ -85,7 +85,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY - 1 - i));
                 break;
             }
             i++;
@@ -97,7 +97,7 @@ public class Queen : ChessPiece
         {
             if (board[j, currentY] == null)
             {
-                possibleMoves.Add(new Vector2(j, currentY));
+                possibleMoves.Add(new Vector2Int(j, currentY));
             }
             else
             {
@@ -105,7 +105,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(j, currentY));
+                possibleMoves.Add(new Vector2Int(j, currentY));
                 break;
             }
         }
@@ -115,7 +115,7 @@ public class Queen : ChessPiece
         {
             if (board[j, currentY] == null)
             {
-                possibleMoves.Add(new Vector2(j, currentY));
+                possibleMoves.Add(new Vector2Int(j, currentY));
             }
             else
             {
@@ -123,7 +123,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(j, currentY));
+                possibleMoves.Add(new Vector2Int(j, currentY));
                 break;
             }
         }
@@ -133,7 +133,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX, j] == null)
             {
-                possibleMoves.Add(new Vector2(currentX, j));
+                possibleMoves.Add(new Vector2Int(currentX, j));
             }
             else
             {
@@ -141,7 +141,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX, j));
+                possibleMoves.Add(new Vector2Int(currentX, j));
                 break;
             }
         }
@@ -151,7 +151,7 @@ public class Queen : ChessPiece
         {
             if (board[currentX, j] == null)
             {
-                possibleMoves.Add(new Vector2(currentX, j));
+                possibleMoves.Add(new Vector2Int(currentX, j));
             }
             else
             {
@@ -159,7 +159,7 @@ public class Queen : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX, j));
+                possibleMoves.Add(new Vector2Int(currentX, j));
                 break;
             }
         }

@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class Pawn : ChessPiece
 {
-    public override List<Vector2> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public override List<Vector2Int> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2> possibleMoves = new List<Vector2>();
+
+
+        List<Vector2Int> possibleMoves = new List<Vector2Int>();
 
         //move up if white, move down if blck
         int direction = (team == 0) ? 1 : -1;

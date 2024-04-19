@@ -28,11 +28,13 @@ public class Chessboard : MonoBehaviour
     private Vector3 bounds;
     private ChessPiece[,] chessPieces;
     private ChessPiece pieceDragging;
-    private List<Vector2> availableMoves = new List<Vector2>();
+    private ChessPiece whiteKing;
+    private ChessPiece blackKing;
+    private List<Vector2Int> availableMoves = new List<Vector2Int>();
     private int turn = 0;
 
-    private int whitePiecesTaken = 0;
-    private int blackPiecesTaken = 0;
+    bool kingInCheck = false;
+
 
 
     private void Awake()
@@ -82,8 +84,17 @@ public class Chessboard : MonoBehaviour
                     {
                         pieceDragging = chessPieces[hitPosition.x, hitPosition.y];
 
-                        availableMoves = pieceDragging.GetPossibleMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
-
+                        if (pieceDragging.type == ChessPieceType.King) {
+                            availableMoves = KingMoves(pieceDragging);
+                        }
+                        else if(kingInCheck)
+                        {
+                            
+                            availableMoves = KingInCheckMoves(pieceDragging);
+                        }
+                        else { 
+                            availableMoves = pieceDragging.GetPossibleMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+                        }
                         highlightMoves(ref availableMoves);
                     }
                 }
@@ -92,13 +103,56 @@ public class Chessboard : MonoBehaviour
             {
                 Vector2Int previousPosition = new Vector2Int(pieceDragging.currentX, pieceDragging.currentY);
                 bool validMove;
-                if (IsValidMove(ref availableMoves, new Vector2(hitPosition.x, hitPosition.y)))
+                if (pieceDragging.type != ChessPieceType.King)
                 {
-                    validMove = MoveTo(pieceDragging, hitPosition.x, hitPosition.y);
+                    if (IsValidMove(ref availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)))
+                    {
+
+                        validMove = MoveTo(pieceDragging, hitPosition.x, hitPosition.y, ref chessPieces);
+                        PositionSinglePiece(hitPosition.x, hitPosition.y);
+                        List<Vector2Int> newSquares = getSquaresAttacking(pieceDragging.team, ref chessPieces);
+                        if (newSquares.Contains(pieceDragging.team == 0 ? new Vector2Int(blackKing.currentX, blackKing.currentY) :
+                                                                         new Vector2Int(whiteKing.currentX, whiteKing.currentY)))
+                        {
+                            kingInCheck = true;
+                            Debug.Log("KingInCheck!!!!");
+                            KingInCheckmate(turn + 1 % 2);
+                        }
+                        else
+                        {
+                            kingInCheck = false;
+                            Debug.Log("king not in check!!!!");
+                        }
+                    }
+                    else
+                    {
+                        validMove = false;
+                    }
                 }
                 else
                 {
-                    validMove = false;
+                    if (IsValidMove(ref availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)))
+                    {
+                        validMove = MoveTo(pieceDragging, hitPosition.x, hitPosition.y, ref chessPieces);
+                        PositionSinglePiece(hitPosition.x, hitPosition.y);
+                        List<Vector2Int> newSquares = getSquaresAttacking(pieceDragging.team, ref chessPieces);
+                        if (newSquares.Contains(pieceDragging.team == 0 ? new Vector2Int(blackKing.currentX, blackKing.currentY) :
+                                                                         new Vector2Int(whiteKing.currentX, whiteKing.currentY)))
+                        {
+                            kingInCheck = true;
+                            Debug.Log("KingInCheck!!!!");
+                            KingInCheckmate(turn + 1 % 2);
+                        }
+                        else
+                        {
+                            kingInCheck = false;
+                            Debug.Log("king not in check!!!!");
+                        }
+                    }
+                    else
+                    {
+                        validMove = false;
+                    }
                 }
                 if (!validMove)
                 {
@@ -109,9 +163,11 @@ public class Chessboard : MonoBehaviour
                 {
                     turn++;
                 }
+
                 pieceDragging = null;
                 unHighlightMoves(ref availableMoves);
-                availableMoves = new List<Vector2>();
+                
+                availableMoves = new List<Vector2Int>();
 
             }
         }
@@ -128,7 +184,7 @@ public class Chessboard : MonoBehaviour
                 pieceDragging.SetPosition(getTileCenter(pieceDragging.currentX, pieceDragging.currentY));
                 pieceDragging = null;
                 unHighlightMoves(ref availableMoves);
-                availableMoves = new List<Vector2>();
+                availableMoves = new List<Vector2Int>();
 
             }
         }
@@ -145,7 +201,6 @@ public class Chessboard : MonoBehaviour
                 pieceDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffset);
             }
         }
-
     }
 
 
@@ -167,6 +222,7 @@ public class Chessboard : MonoBehaviour
         chessPieces[5, 0] = SpawnSinglePiece(ChessPieceType.Bishop, whiteTeam);
         chessPieces[6, 0] = SpawnSinglePiece(ChessPieceType.Knight, whiteTeam);
         chessPieces[7, 0] = SpawnSinglePiece(ChessPieceType.Rook, whiteTeam);
+        whiteKing = chessPieces[4, 0];
         //Pawns
         for (int i = 0; i < TILE_COUNT_X; i++)
         {
@@ -182,6 +238,8 @@ public class Chessboard : MonoBehaviour
         chessPieces[5, 7] = SpawnSinglePiece(ChessPieceType.Bishop, blackTeam);
         chessPieces[6, 7] = SpawnSinglePiece(ChessPieceType.Knight, blackTeam);
         chessPieces[7, 7] = SpawnSinglePiece(ChessPieceType.Rook, blackTeam);
+        blackKing = chessPieces[4, 7];
+
         //Pawns
         for (int i = 0; i < TILE_COUNT_X; i++)
         {
@@ -315,20 +373,20 @@ public class Chessboard : MonoBehaviour
                     }
                     catch
                     {
-                        print("null object referenced");
+                        Debug.Log("null object referenced");
                     }
                 }
             }
         }
     }
 
-    private bool MoveTo(ChessPiece piece, int x, int y)
+    private bool MoveTo(ChessPiece piece, int x, int y, ref ChessPiece[,] board)
     {
         Vector2Int previousPosition = new Vector2Int(piece.currentX, piece.currentY);
 
-        if (chessPieces[x, y] != null)
+        if (board[x, y] != null)
         {
-            ChessPiece other = chessPieces[x, y];
+            ChessPiece other = board[x, y];
 
             if (piece.team == other.team)
             {
@@ -336,33 +394,31 @@ public class Chessboard : MonoBehaviour
             }
             else
             {
-                Taken(x, y);
-                chessPieces[x, y] = null;
+                Taken(x, y, ref board);
+                board[x, y] = null;
             }
         }
-        chessPieces[x, y] = piece;
-        chessPieces[previousPosition.x, previousPosition.y] = null;
+        board[x, y] = piece;
+        board[previousPosition.x, previousPosition.y] = null;
 
-        PositionSinglePiece(x, y);
-
+        //Debug.Log("Moved to " + x + " " + y);
         return true;
     }
 
-    private void Taken(int x, int y)
+    private void Taken(int x, int y, ref ChessPiece[,] board)
     {
 
-        ChessPiece piece = chessPieces[x, y];
+        ChessPiece piece = board[x, y];
         if (piece.team == 0)
         {
-            whitePiecesTaken++;
+
             piece.SetScale(Vector3.zero);
-            //piece.SetPosition(new Vector3(-8 * tileSize, yOffset,( -8 * tileSize)+ whitePiecesTaken*tileSize)+bounds);
         }
         else
         {
-            blackPiecesTaken++;
+
             piece.SetScale(Vector3.zero);
-            blackPiecesTaken++;
+
         }
         if(piece.type == ChessPieceType.King)
         {
@@ -376,10 +432,10 @@ public class Chessboard : MonoBehaviour
             }
                 
         }
-        //piece.SetScale(new Vector3(0.7f, 0.7f, 0.7f));
+        
     }
 
-    private bool IsValidMove(ref List<Vector2> moves, Vector2 pos)
+    private bool IsValidMove(ref List<Vector2Int> moves, Vector2Int pos)
     {
         for (int i = 0; i < moves.Count; i++)
         {
@@ -391,7 +447,7 @@ public class Chessboard : MonoBehaviour
         return false;
     }
 
-    private void highlightMoves(ref List<Vector2> moves)
+    private void highlightMoves(ref List<Vector2Int> moves)
     {
         for (int i = 0; i < moves.Count; i++)
         {
@@ -399,13 +455,165 @@ public class Chessboard : MonoBehaviour
         }
     }
 
-    private void unHighlightMoves(ref List<Vector2> moves)
+    private void unHighlightMoves(ref List<Vector2Int> moves)
     {
         for (int i = 0; i < moves.Count; i++)
         {
             tiles[(int)moves[i].x, (int)moves[i].y].layer = LayerMask.NameToLayer("Tile");
         }
     }
+
+    private List<Vector2Int> getSquaresAttacking(int currTeam, ref ChessPiece[,] board)
+    {
+        var squaresAttacked = new Dictionary<Vector2Int, Vector2Int>();
+        for(int x =0; x < TILE_COUNT_X; x++)
+        {
+            for(int y= 0; y< TILE_COUNT_Y; y++)
+            {
+                if(board[x,y]!=null && board[x,y].team == currTeam)
+                {
+                    foreach(Vector2Int square in board[x,y].GetPossibleMoves(ref board))
+                    {
+                        try
+                        {
+                            squaresAttacked[square] = square;
+                        }
+                        catch { }
+                    }
+                }
+            }
+
+        }
+        List<Vector2Int> squaresAttackedList = new List<Vector2Int>();
+        foreach (KeyValuePair<Vector2Int, Vector2Int> kvp in squaresAttacked)
+        {
+            squaresAttackedList.Add(kvp.Key);
+        }
+        return squaresAttackedList;
+    }
+
+    private Dictionary<ChessPiece, List<Vector2Int>> getAllPossibleMoves(int currTeam, ref ChessPiece[,] board)
+    {
+        var squaresAttacked = new Dictionary<ChessPiece, List<Vector2Int>>();
+        for (int x = 0; x < TILE_COUNT_X; x++)
+        {
+            for (int y = 0; y < TILE_COUNT_Y; y++)
+            {
+                if (board[x, y] != null && board[x, y].team == currTeam)
+                {
+                    foreach (Vector2Int square in board[x, y].GetPossibleMoves(ref chessPieces))
+                    {
+                        squaresAttacked[board[x, y]].Add(square);
+                    }
+                }
+            }
+
+        }
+
+        return squaresAttacked;
+    }
+    private List<Vector2Int> KingMoves(ChessPiece king)
+    {
+        List<Vector2Int> attackedSquares = getSquaresAttacking(king.team == 0 ? 1 : 0, ref chessPieces);
+
+        List<Vector2Int> possibleMoves = king.GetPossibleMoves(ref chessPieces);
+        for(int i = 0; i < attackedSquares.Count; i++)
+        {
+            if(possibleMoves.Contains(attackedSquares[i])) {
+                possibleMoves.Remove(attackedSquares[i]);
+            } 
+        }
+
+        return possibleMoves;
+    }
+
+    private void KingInCheckmate(int teamInCheck)
+    {
+        Dictionary<ChessPiece, List<Vector2Int>> possibleMoves = getAllPossibleMoves(teamInCheck, ref chessPieces);
+
+        foreach (KeyValuePair<ChessPiece, List<Vector2Int>> kvp in possibleMoves)
+        {
+            foreach(Vector2Int move in kvp.Value)
+            {
+                Debug.Log(kvp.Key.type + ": " + move);
+                if(SimulateSingleMove(ref chessPieces, kvp.Key, move)) {
+                    break;
+                }
+            }
+        }
+
+        Checkmate(teamInCheck == 0 ? 1 : 0);
+
+    }
+
+    private List<Vector2Int> KingInCheckMoves(ChessPiece piece)
+    {
+
+        List<Vector2Int> simulatedMoves = piece.GetPossibleMoves(ref chessPieces);
+        List<Vector2Int> possibleMoves = new List<Vector2Int>();
+
+        foreach (Vector2Int move in simulatedMoves)
+        {
+
+            if (SimulateSingleMove(ref chessPieces, piece, move))
+            {
+                possibleMoves.Add(move);
+                //Debug.Log("added move" + move);
+            }
+
+        }
+
+
+        return possibleMoves;
+    }
+
+    //returns false if king is still in check after simulated move, true otherwise
+    private bool SimulateSingleMove(ref ChessPiece[,] board, ChessPiece piece, Vector2Int move)
+    {
+        ChessPiece[,] copy = new ChessPiece[8, 8];
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                if (chessPieces[x, y] != null)
+                {
+                    copy[x, y] = Instantiate(chessPieces[x, y]);
+                    copy[x, y].SetScale(Vector3.zero, true);
+                }
+            }
+        }
+        MoveTo(copy[piece.currentX, piece.currentY], move.x, move.y, ref copy);
+
+        List<Vector2Int> attackedSquares = getSquaresAttacking(piece.team == 0 ? 1: 0, ref copy);
+        Debug.Log("Simulated Move: " + move);
+        //foreach (Vector2Int a in attackedSquares)
+        //{
+        //    Debug.Log(a);
+        //}
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                if (copy[x, y] != null)
+                {
+                    Debug.Log("Destroying:" + copy[x, y]);
+                    Destroy(copy[x, y].gameObject);
+
+                    copy[x, y] = null;
+                }
+            }
+        }
+        if (piece.team == 0)
+        {
+            return !(attackedSquares.Contains(new Vector2Int(whiteKing.currentX, whiteKing.currentY)));
+        } else
+        {
+            return !(attackedSquares.Contains(new Vector2Int(blackKing.currentX, blackKing.currentY)));
+        }
+
+        
+    }
+
 
     //UI/Checkmate
 

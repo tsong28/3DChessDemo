@@ -6,9 +6,9 @@ public class Bishop : ChessPiece
 {
     
 
-    public override List<Vector2> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public override List<Vector2Int> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2> possibleMoves = new List<Vector2>();
+        List<Vector2Int> possibleMoves = new List<Vector2Int>();
 
         //move diagonal up-right
         int i = 0;
@@ -16,7 +16,7 @@ public class Bishop : ChessPiece
         {
             if (board[currentX + 1 + i, currentY + 1 + i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY + 1 + i));
             }
             else
             {
@@ -24,7 +24,7 @@ public class Bishop : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY + 1 + i));
                 break;
             }
             i++;
@@ -37,7 +37,7 @@ public class Bishop : ChessPiece
         {
             if (board[currentX - 1 - i, currentY + 1 + i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY + 1 + i));
             }
             else
             {
@@ -45,7 +45,7 @@ public class Bishop : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY + 1 + i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY + 1 + i));
                 break;
             }
             i++;
@@ -58,7 +58,7 @@ public class Bishop : ChessPiece
         {
             if (board[currentX + 1 + i, currentY - 1 - i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY - 1 - i));
             }
             else
             {
@@ -66,7 +66,7 @@ public class Bishop : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX + 1 + i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX + 1 + i, currentY - 1 - i));
                 break;
             }
             i++;
@@ -79,7 +79,7 @@ public class Bishop : ChessPiece
         {
             if (board[currentX - 1 - i, currentY - 1 - i] == null)
             {
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY - 1 - i));
             }
             else
             {
@@ -87,7 +87,7 @@ public class Bishop : ChessPiece
                 {
                     break;
                 }
-                possibleMoves.Add(new Vector2(currentX - 1 - i, currentY - 1 - i));
+                possibleMoves.Add(new Vector2Int(currentX - 1 - i, currentY - 1 - i));
                 break;
             }
             i++;

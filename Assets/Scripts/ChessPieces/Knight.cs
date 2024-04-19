@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Knight : ChessPiece
 {
-    public override List<Vector2> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public override List<Vector2Int> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
     {
-        List<Vector2> possibleMoves = new List<Vector2>();
+        List<Vector2Int> possibleMoves = new List<Vector2Int>();
         int x;
         int y;
 

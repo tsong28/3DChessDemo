@@ -25,6 +25,20 @@ public class ChessPiece : MonoBehaviour
     private Vector3 desiredPosition;
     private Vector3 desiredScale = Vector3.one;
 
+    //public ChessPiece Copy()
+    //{
+    //    ChessPiece copy = GameObject.GetComponent<ChessPiece>();
+    //    copy.team = team;
+    //    copy.currentX = currentX;
+    //    copy.currentY = currentY;
+
+    //    copy.type = type;
+
+    //    copy.desiredPosition = desiredPosition;
+    //    copy.desiredScale = desiredScale = Vector3.one;
+    //    return copy;
+    //}
+
     private void Update()
     {
         transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);
@@ -49,8 +63,8 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
-    public virtual List<Vector2> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX, int tileCountY)
+    public virtual List<Vector2Int> GetPossibleMoves(ref ChessPiece[,] board, int tileCountX = 8, int tileCountY = 8)
     {
-        return new List<Vector2>();
+        return new List<Vector2Int>();
     }
 }
