@@ -9,6 +9,7 @@ public class King : ChessPiece
         List<Vector2Int> possibleMoves = new List<Vector2Int>();
 
         //up
+
         if (currentY != 7)
         {
             if (board[currentX, currentY + 1] == null || board[currentX, currentY + 1].team != team)
@@ -82,4 +83,4 @@ public class King : ChessPiece
         return possibleMoves;
 
     }
-}
+}   

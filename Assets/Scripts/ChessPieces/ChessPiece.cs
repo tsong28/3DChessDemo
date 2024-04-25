@@ -25,6 +25,9 @@ public class ChessPiece : MonoBehaviour
     private Vector3 desiredPosition;
     private Vector3 desiredScale = Vector3.one;
 
+    //important for castling
+    public bool hasMoved = false;
+
     //public ChessPiece Copy()
     //{
     //    ChessPiece copy = GameObject.GetComponent<ChessPiece>();
