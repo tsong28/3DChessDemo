@@ -19,6 +19,7 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private Material hoverMaterial;
     [SerializeField] private Material movesMaterial;
     [SerializeField] private GameObject victoryScreen;
+    [SerializeField] private GameObject promoteScreen;
 
     private const int TILE_COUNT_X = 8;
     private const int TILE_COUNT_Y = 8;
@@ -32,6 +33,8 @@ public class Chessboard : MonoBehaviour
     private ChessPiece blackKing;
     private List<Vector2Int> availableMoves = new List<Vector2Int>();
     private int turn = 0;
+    private ChessPiece pieceToPromote = null;
+    private ChessPiece enPassantPiece = null;
 
     bool kingInCheck = false;
 
@@ -86,13 +89,20 @@ public class Chessboard : MonoBehaviour
                         if (pieceDragging.type == ChessPieceType.King) {
                             availableMoves = KingMoves(pieceDragging);
                         }
-                        else if(kingInCheck)
+                        else
                         {
-                            
+
                             availableMoves = KingInCheckMoves(pieceDragging);
-                        }
-                        else { 
-                            availableMoves = pieceDragging.GetPossibleMoves(ref chessPieces, TILE_COUNT_X, TILE_COUNT_Y);
+                            if (enPassantPiece != null && pieceDragging.type == ChessPieceType.Pawn && enPassantPiece.team != pieceDragging.team)
+                            {
+                                if(enPassantPiece.currentY==pieceDragging.currentY && (enPassantPiece.currentX +1 == pieceDragging.currentX
+                                    || enPassantPiece.currentX -1 == pieceDragging.currentX))
+                                {
+                                    int direction = pieceDragging.team == 0 ? 1 : -1;
+                                    Vector2Int move = new Vector2Int(enPassantPiece.currentX, pieceDragging.currentY+direction);
+                                    availableMoves.Add(move);
+                                }
+                            }
                         }
                         highlightMoves(ref availableMoves);
                     }
@@ -106,10 +116,32 @@ public class Chessboard : MonoBehaviour
                 {
                     if (IsValidMove(ref availableMoves, new Vector2Int(hitPosition.x, hitPosition.y)))
                     {
+                        if(pieceDragging.type == ChessPieceType.Pawn && enPassantPiece != null)
+                        {
+                            int direction = pieceDragging.team == 0 ? -1 : 1;
+                            if (hitPosition.y == enPassantPiece.currentY -direction &&
+                                (hitPosition.x == enPassantPiece.currentX))
+                            {
+                                Debug.Log("en passant piece at: " + enPassantPiece.currentX + " " + enPassantPiece.currentY);
+                                Debug.Log("taking moving to: " + hitPosition.x + " " + hitPosition.y);
+                                Taken(enPassantPiece.currentX, enPassantPiece.currentY, ref chessPieces);
+                                enPassantPiece = null;
+                            }
+                        }
+                        if(pieceDragging.type == ChessPieceType.Pawn && (Math.Abs(pieceDragging.currentY-hitPosition.y) == 2))
+                        {
+                            enPassantPiece = pieceDragging;
+                        } else
+                        {
+                            enPassantPiece = null;
+                        }
 
                         validMove = true;
                         MoveTo(pieceDragging, hitPosition.x, hitPosition.y, ref chessPieces);
-                        
+                        if (pieceDragging.type == ChessPieceType.Pawn && (pieceDragging.currentY == 0 || pieceDragging.currentY == 7))
+                        {
+                            Promote(pieceDragging);
+                        }
 
                         //check if move put king in check
                         List<Vector2Int> newSquares = getSquaresAttacking(pieceDragging.team, ref chessPieces);
@@ -138,6 +170,7 @@ public class Chessboard : MonoBehaviour
                     {
                         validMove = true;
                         MoveTo(pieceDragging, hitPosition.x, hitPosition.y, ref chessPieces);
+
                         
 
                         //check if move put king in check
@@ -169,6 +202,10 @@ public class Chessboard : MonoBehaviour
                 else
                 {
                     turn++;
+                    Quaternion rotation = Quaternion.Euler(55, turn %2 == 0 ? 0 : 180, 0);
+                    Camera.main.transform.SetLocalPositionAndRotation(new Vector3Int(0, 20, (turn % 2 == 0 ? -15 : 15)),
+                        rotation);
+                    
                 }
 
                 pieceDragging = null;
@@ -208,6 +245,8 @@ public class Chessboard : MonoBehaviour
                 pieceDragging.SetPosition(ray.GetPoint(distance) + Vector3.up * dragOffset);
             }
         }
+
+
     }
 
 
@@ -394,7 +433,7 @@ public class Chessboard : MonoBehaviour
         if (board[x, y] != null)
         {
             ChessPiece other = board[x, y];
-            if(other.type == ChessPieceType.Rook)
+            if(other.type == ChessPieceType.Rook && piece.type == ChessPieceType.King)
             {
                 Castle(piece, other);
                 return true;
@@ -642,7 +681,7 @@ public class Chessboard : MonoBehaviour
     private bool CanCastle(ChessPiece king, ChessPiece rook)
     {
         Debug.Log("Checking can castle");
-        if(!king.hasMoved&&!kingInCheck&&!rook.hasMoved)
+        if(!king.hasMoved&&!kingInCheck&&!rook.hasMoved)    
         {
             Debug.Log("Checking attacked squares and piece involvement");
             List<Vector2Int> moves = getSquaresAttacking(king.team == 0 ? 1 : 0, ref chessPieces);
@@ -718,8 +757,6 @@ public class Chessboard : MonoBehaviour
 
         }
 
-        
-
     }
 
 
@@ -729,6 +766,54 @@ public class Chessboard : MonoBehaviour
     {
         DisplayVictory(team);
     }
+
+    private void Promote(ChessPiece pawn)
+    {
+        pieceToPromote = pawn;
+        promoteScreen.SetActive(true);
+    }
+    public void setRook()
+    {
+        int team = pieceToPromote.team;
+        Vector2Int pos = new Vector2Int(pieceToPromote.currentX, pieceToPromote.currentY);
+        chessPieces[pos.x, pos.y] = SpawnSinglePiece(ChessPieceType.Rook, team);
+        chessPieces[pos.x, pos.y].hasMoved = true;
+        Destroy(pieceToPromote.gameObject);
+        promoteScreen.SetActive(false);
+        PositionSinglePiece(pos.x, pos.y, ref chessPieces, true);
+    }
+    public void setQueen()
+    {
+        int team = pieceToPromote.team;
+        Vector2Int pos = new Vector2Int(pieceToPromote.currentX, pieceToPromote.currentY);
+        chessPieces[pos.x, pos.y] = SpawnSinglePiece(ChessPieceType.Queen, team);
+        chessPieces[pos.x, pos.y].hasMoved = true;
+        Destroy(pieceToPromote.gameObject);
+        promoteScreen.SetActive(false);
+        PositionSinglePiece(pos.x, pos.y, ref chessPieces, true);
+    }
+    public void setBishop()
+    {
+        int team = pieceToPromote.team;
+        Vector2Int pos = new Vector2Int(pieceToPromote.currentX, pieceToPromote.currentY);
+        chessPieces[pos.x, pos.y] = SpawnSinglePiece(ChessPieceType.Bishop, team);
+        chessPieces[pos.x, pos.y].hasMoved = true;
+        Destroy(pieceToPromote.gameObject);
+        promoteScreen.SetActive(false);
+        PositionSinglePiece(pos.x, pos.y, ref chessPieces, true);
+    }
+    public void setKnight()
+    {
+        int team = pieceToPromote.team;
+        Vector2Int pos = new Vector2Int(pieceToPromote.currentX, pieceToPromote.currentY);
+        chessPieces[pos.x, pos.y] = SpawnSinglePiece(ChessPieceType.Knight, team);
+        chessPieces[pos.x, pos.y].hasMoved = true;
+        Destroy(pieceToPromote.gameObject);
+        promoteScreen.SetActive(false);
+        PositionSinglePiece(pos.x, pos.y, ref chessPieces, true);
+    }
+
+
 
     private void DisplayVictory(int team)
     {

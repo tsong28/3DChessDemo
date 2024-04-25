@@ -28,6 +28,9 @@ public class ChessPiece : MonoBehaviour
     //important for castling
     public bool hasMoved = false;
 
+    //important for enpassant
+    public bool canEnPassant = false;
+
     //public ChessPiece Copy()
     //{
     //    ChessPiece copy = GameObject.GetComponent<ChessPiece>();

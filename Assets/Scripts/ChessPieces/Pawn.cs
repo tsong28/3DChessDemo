@@ -40,6 +40,10 @@ public class Pawn : ChessPiece
                 {
                     possibleMoves.Add(new Vector2Int(currentX + 1, currentY + direction));
                 }
+                //if(board[currentX+1, currentY].type == ChessPieceType.Pawn && board[currentX + 1, currentY].canEnPassant)
+                //{
+                //    possibleMoves.Add(new Vector2Int(currentX + 1, currentY + direction));
+                //}
             }
 
             //left take
@@ -49,11 +53,17 @@ public class Pawn : ChessPiece
                 {
                     possibleMoves.Add(new Vector2Int(currentX - 1, currentY + direction));
                 }
+                //if (board[currentX - 1, currentY].type == ChessPieceType.Pawn && board[currentX - 1, currentY].canEnPassant)
+                //{
+                //    possibleMoves.Add(new Vector2Int(currentX - 1, currentY + direction));
+                //}
             }
+
 
             
         }
         return possibleMoves;
     }
+
     
 }
