@@ -28,23 +28,6 @@ public class ChessPiece : MonoBehaviour
     //important for castling
     public bool hasMoved = false;
 
-    //important for enpassant
-    public bool canEnPassant = false;
-
-    //public ChessPiece Copy()
-    //{
-    //    ChessPiece copy = GameObject.GetComponent<ChessPiece>();
-    //    copy.team = team;
-    //    copy.currentX = currentX;
-    //    copy.currentY = currentY;
-
-    //    copy.type = type;
-
-    //    copy.desiredPosition = desiredPosition;
-    //    copy.desiredScale = desiredScale = Vector3.one;
-    //    return copy;
-    //}
-
     private void Update()
     {
         transform.position = Vector3.Lerp(transform.position, desiredPosition, Time.deltaTime * 10);

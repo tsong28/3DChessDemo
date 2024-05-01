@@ -21,8 +21,8 @@ public class Chessboard : MonoBehaviour
     [SerializeField] private GameObject victoryScreen;
     [SerializeField] private GameObject promoteScreen;
 
-    private const int TILE_COUNT_X = 8;
-    private const int TILE_COUNT_Y = 8;
+    public const int TILE_COUNT_X = 8;
+    public const int TILE_COUNT_Y = 8;
     private GameObject[,] tiles;
     private Camera currentCamera;
     private Vector2Int currentHover;
@@ -35,6 +35,7 @@ public class Chessboard : MonoBehaviour
     private int turn = 0;
     private ChessPiece pieceToPromote = null;
     private ChessPiece enPassantPiece = null;
+    ChessGameManager manager = new ChessGameManager();
 
     bool kingInCheck = false;
 
@@ -125,7 +126,9 @@ public class Chessboard : MonoBehaviour
                                 Debug.Log("en passant piece at: " + enPassantPiece.currentX + " " + enPassantPiece.currentY);
                                 Debug.Log("taking moving to: " + hitPosition.x + " " + hitPosition.y);
                                 Taken(enPassantPiece.currentX, enPassantPiece.currentY, ref chessPieces);
+                                chessPieces[enPassantPiece.currentX, enPassantPiece.currentY] = null;
                                 enPassantPiece = null;
+                             
                             }
                         }
                         if(pieceDragging.type == ChessPieceType.Pawn && (Math.Abs(pieceDragging.currentY-hitPosition.y) == 2))
@@ -205,6 +208,8 @@ public class Chessboard : MonoBehaviour
                     Quaternion rotation = Quaternion.Euler(55, turn %2 == 0 ? 0 : 180, 0);
                     Camera.main.transform.SetLocalPositionAndRotation(new Vector3Int(0, 20, (turn % 2 == 0 ? -15 : 15)),
                         rotation);
+                    string move = "e4";
+                    manager.RecordMove("e4");
                     
                 }
 
@@ -446,6 +451,7 @@ public class Chessboard : MonoBehaviour
             {
                 Taken(x, y, ref board);
                 board[x, y] = null;
+                Destroy(other.gameObject);
             }
         }
         board[x, y] = piece;
@@ -660,7 +666,7 @@ public class Chessboard : MonoBehaviour
             {
                 if (copy[x, y] != null)
                 {
-                    //Debug.Log("Destroying:" + copy[x, y]);
+                    Debug.Log("Destroying:" + copy[x, y] + x + " " + y);
                     Destroy(copy[x, y].gameObject);
 
                     copy[x, y] = null;
